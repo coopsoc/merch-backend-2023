@@ -8,6 +8,7 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/joho/godotenv"
 	"github.com/stripe/stripe-go/v74"
+	"github.com/stripe/stripe-go/v74/paymentintent"
 	"github.com/stripe/stripe-go/v74/price"
 	"github.com/stripe/stripe-go/v74/product"
 )
@@ -21,7 +22,14 @@ func main() {
 	stripe.Key = os.Getenv("STRIPE_KEY")
 
 	router := gin.Default()
+
+	// Maybe enable debug mode
+	if os.Getenv("DEBUG") == "true" {
+		gin.SetMode(gin.DebugMode)
+	}
+
 	router.GET("/products", getProducts)
+	router.POST("/payment", createPaymentIntent)
 
 	router.Run("localhost:8080")
 }
@@ -63,5 +71,51 @@ func getProducts(c *gin.Context) {
 		})
 	}
 
-	c.IndentedJSON(http.StatusOK, items)
+	// if dev, use indented json
+	if gin.Mode() == gin.DebugMode {
+		c.IndentedJSON(http.StatusOK, items)
+	} else {
+		c.JSON(http.StatusOK, items)
+	}
+}
+
+type cart_item struct {
+	id string
+}
+
+type intent struct {
+	CLIENT_SECRET string `json:"clientSecret"`
+}
+
+func calculateOrderAmount(items []cart_item) int64 {
+	// Replace this constant with a calculation of the order's amount
+	// Calculate the order total on the server to prevent
+	// people from directly manipulating the amount on the client
+	return 1400
+}
+
+func createPaymentIntent(c *gin.Context) {
+	type paymentIntent struct {
+		Items []cart_item `json:"items"`
+	}
+
+	var body paymentIntent
+	c.BindJSON(&body)
+
+	params := &stripe.PaymentIntentParams{
+		Amount:   stripe.Int64(calculateOrderAmount(body.Items)),
+		Currency: stripe.String(string(stripe.CurrencyAUD)),
+		AutomaticPaymentMethods: &stripe.PaymentIntentAutomaticPaymentMethodsParams{
+			Enabled: stripe.Bool(true),
+		},
+	}
+
+	pi, _ := paymentintent.New(params)
+
+	// if dev, use indented json
+	if gin.Mode() == gin.DebugMode {
+		c.IndentedJSON(http.StatusOK, intent{CLIENT_SECRET: pi.ClientSecret})
+	} else {
+		c.JSON(http.StatusOK, intent{CLIENT_SECRET: pi.ClientSecret})
+	}
 }
