@@ -64,7 +64,6 @@ func calculateOrderAmount(cart_items []cart_item) int64 {
 	all_items := stripeGetProducts()
 
 	for i := 0; i < len(cart_items); i++ {
-		// TODO find price for given ID, multiply by quantity
 		total += findItemPrice(all_items, cart_items[i].id) * int64(cart_items[i].quantity)
 	}
 
