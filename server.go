@@ -51,6 +51,7 @@ func createPaymentIntent(c *gin.Context) {
 
 	var body cart
 	c.BindJSON(&body)
+	// TODO - make sure cart items have quantities and IDs
 
 	i := stripeCreatePaymentIntent(body.Items)
 
