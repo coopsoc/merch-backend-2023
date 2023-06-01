@@ -2,8 +2,8 @@ name: Deploy to remote server
 
 on:
   push:
-    branches: [ "main" ]
- 
+    branches: ["main"]
+
 jobs:
   deploy:
     runs-on: ubuntu-latest
@@ -15,9 +15,7 @@ jobs:
           ssh-keyscan -H ${{ secrets.SSH_HOST }} > ~/.ssh/known_hosts
 
       - name: Connect, pull changes, and run server
-        run: ssh ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }} "cd ~/Desktop/projects/merch-backend && git checkout main && git pull && exit"
+        run: ssh ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }} "cd ~/Desktop/projects/merch-backend && git fetch --prune && git reset --hard origin/main && git clean -df && exit"
 
       - name: Clean up
-        run: rm -rf ~/.ssh 
-
-
+        run: rm -rf ~/.ssh
