@@ -48,18 +48,35 @@ func stripeGetProducts() []item {
 }
 
 type cart_item struct {
-	id string
+	id       string
+	quantity int
 }
 
 type intent struct {
 	CLIENT_SECRET string `json:"clientSecret"`
 }
 
-func calculateOrderAmount(items []cart_item) int64 {
-	// Replace this constant with a calculation of the order's amount
-	// Calculate the order total on the server to prevent
-	// people from directly manipulating the amount on the client
-	return 1400
+// Calculate the order total on the server to prevent
+// people from directly manipulating the amount on the client
+// ! Optional TODO - optimise by only requesting the ID's we actually need from Stripe.
+func calculateOrderAmount(cart_items []cart_item) int64 {
+	var total int64 = 0
+	all_items := stripeGetProducts()
+
+	for i := 0; i < len(cart_items); i++ {
+		total += findItemPrice(all_items, cart_items[i].id) * int64(cart_items[i].quantity)
+	}
+
+	return total
+}
+
+func findItemPrice(items []item, id string) int64 {
+	for i := 0; i < len(items); i++ {
+		if items[i].ID == id {
+			return items[i].PRICE
+		}
+	}
+	return 0
 }
 
 func stripeCreatePaymentIntent(items []cart_item) intent {
