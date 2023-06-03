@@ -11,6 +11,8 @@ import (
 )
 
 func main() {
+	gmain()
+
 	godotenv.Load()
 
 	ok := false
