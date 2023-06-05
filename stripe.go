@@ -85,7 +85,8 @@ func calculateOrderAmount(cart_items []cart_item) int64 {
 		total_price -= 500
 	}
 
-	return total_price
+	// Price must be at least $0.50 AUD, as per Stripe's minimum
+	return max(50, total_price)
 }
 
 func findItemPrice(items []item, id string) int64 {
