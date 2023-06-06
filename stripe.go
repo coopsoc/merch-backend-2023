@@ -7,6 +7,9 @@ import (
 	"github.com/stripe/stripe-go/v74/product"
 )
 
+// ID of the product in a bundle discount
+const hoodie_id = "prod_O1XqaoJYM2O4uR"
+
 type item struct {
 	ID          string   `json:"id"`
 	NAME        string   `json:"name"`
@@ -60,14 +63,30 @@ type intent struct {
 // people from directly manipulating the amount on the client
 // ! Optional TODO - optimise by only requesting the ID's we actually need from Stripe.
 func calculateOrderAmount(cart_items []cart_item) int64 {
-	var total int64 = 0
 	all_items := stripeGetProducts()
 
+	var total_price int64 = 0
+	var total_items int = 0
+	var maybe_discount bool = false
+
 	for i := 0; i < len(cart_items); i++ {
-		total += findItemPrice(all_items, cart_items[i].id) * int64(cart_items[i].quantity)
+		if cart_items[i].id == hoodie_id {
+			maybe_discount = true
+		}
+		total_items += cart_items[i].quantity
+		total_price += findItemPrice(all_items, cart_items[i].id) * int64(cart_items[i].quantity)
 	}
 
-	return total
+	if maybe_discount && total_items >= 3 {
+		// $10 off if you buy a hoodie and 2 other items
+		total_price -= 1000
+	} else if maybe_discount && total_items >= 2 {
+		// $5 off if you buy a hoodie and 1 other item
+		total_price -= 500
+	}
+
+	// Price must be at least $0.50 AUD, as per Stripe's minimum
+	return max(50, total_price)
 }
 
 func findItemPrice(items []item, id string) int64 {
