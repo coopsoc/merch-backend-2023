@@ -70,6 +70,7 @@ func createPaymentIntent(c *gin.Context) {
 		}
 	} else {
 		c.Writer.Header().Set("Access-Control-Allow-Origin", "*")
+		c.Writer.Header().Set("Access-Control-Allow-Methods", "POST, GET, OPTIONS, DELETE")
 		c.Status(http.StatusNoContent)
 	}
 }
