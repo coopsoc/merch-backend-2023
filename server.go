@@ -59,6 +59,8 @@ func createPaymentIntent(c *gin.Context) {
 
 	i := stripeCreatePaymentIntent(body.Items)
 
+	c.Writer.Header().Set("Access-Control-Allow-Origin", "*")
+
 	// if dev, use indented json
 	if gin.Mode() == gin.DebugMode {
 		c.IndentedJSON(http.StatusOK, i)
