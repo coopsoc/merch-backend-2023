@@ -30,6 +30,8 @@ func main() {
 func getProducts(c *gin.Context) {
 	items := stripeGetProducts()
 
+	c.Writer.Header().Set("Access-Control-Allow-Origin", "*")
+
 	// if dev, use indented json
 	if gin.Mode() == gin.DebugMode {
 		c.IndentedJSON(http.StatusOK, items)
