@@ -1,1 +1,1 @@
-web: ./coopsoc.com.au
+web: bin/coopsoc.com.au
