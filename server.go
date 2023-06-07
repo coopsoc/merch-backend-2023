@@ -11,11 +11,6 @@ import (
 )
 
 func main() {
-	err := godotenv.Load()
-	if err != nil {
-		log.Fatal("Error loading .env file")
-	}
-
 	stripe.Key = os.Getenv("STRIPE_KEY")
 
 	// Maybe enable debug mode
@@ -24,6 +19,7 @@ func main() {
 	} else {
 		gin.SetMode(gin.ReleaseMode)
 	}
+
 	router := gin.Default()
 
 	router.GET("/products", getProducts)
