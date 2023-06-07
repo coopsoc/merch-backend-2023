@@ -29,7 +29,7 @@ func main() {
 	router := gin.Default()
 
 	router.GET("/products", getProducts)
-	router.POST("/payment", createPaymentIntent)
+	router.Any("/payment", createPaymentIntent)
 
 	port := os.Getenv("PORT")
 	router.Run(":" + port)
@@ -49,22 +49,27 @@ func getProducts(c *gin.Context) {
 }
 
 func createPaymentIntent(c *gin.Context) {
-	type cart struct {
-		Items []cart_item `json:"items"`
-	}
+	if (c.Request.Method == "POST") {
+		type cart struct {
+			Items []cart_item `json:"items"`
+		}
 
-	var body cart
-	c.BindJSON(&body)
-	// TODO - make sure cart items have quantities and IDs
+		var body cart
+		c.BindJSON(&body)
+		// TODO - make sure cart items have quantities and IDs
 
-	i := stripeCreatePaymentIntent(body.Items)
+		i := stripeCreatePaymentIntent(body.Items)
 
-	c.Writer.Header().Set("Access-Control-Allow-Origin", "*")
+		c.Writer.Header().Set("Access-Control-Allow-Origin", "*")
 
-	// if dev, use indented json
-	if gin.Mode() == gin.DebugMode {
-		c.IndentedJSON(http.StatusOK, i)
+		// if dev, use indented json
+		if gin.Mode() == gin.DebugMode {
+			c.IndentedJSON(http.StatusOK, i)
+		} else {
+			c.JSON(http.StatusOK, i)
+		}
 	} else {
-		c.JSON(http.StatusOK, i)
+		c.Writer.Header().Set("Access-Control-Allow-Origin", "*")
+		c.Status(http.StatusNoContent)
 	}
 }
