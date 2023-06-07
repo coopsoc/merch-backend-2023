@@ -30,7 +30,7 @@ func main() {
 	router.POST("/payment", createPaymentIntent)
 
 	port := os.Getenv("PORT")
-	router.Run("localhost:" + port)
+	router.Run(":" + port)
 }
 
 func getProducts(c *gin.Context) {
