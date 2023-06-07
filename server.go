@@ -1,15 +1,23 @@
 package main
 
 import (
+	"log"
 	"net/http"
 	"os"
 
 	"github.com/gin-gonic/gin"
+	"github.com/joho/godotenv"
 	"github.com/stripe/stripe-go/v74"
 )
 
 func main() {
-	stripe.Key = os.Getenv("STRIPE_KEY")
+	godotenv.Load()
+
+	ok := false
+	stripe.Key, ok = os.LookupEnv("STRIPE_KEY")
+	if !ok {
+		log.Fatal("STRIPE_KEY not set")
+	}
 
 	// Maybe enable debug mode
 	if os.Getenv("DEBUG") == "true" {

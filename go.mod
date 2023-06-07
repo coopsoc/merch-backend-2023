@@ -4,7 +4,7 @@ go 1.20
 
 require (
 	github.com/gin-gonic/gin v1.9.0
-	github.com/stripe/stripe-go v70.15.0+incompatible
+	github.com/joho/godotenv v1.5.1
 	github.com/stripe/stripe-go/v74 v74.20.0
 )
 
