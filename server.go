@@ -1,4 +1,4 @@
-// TODO - run append (pro) / update functions in sheets.go on PaymentIntent creation & webhook (respectively)
+// TODO - run append (consumer & product) / update functions in sheets.go on PaymentIntent creation & webhook (respectively)
 
 package main
 
