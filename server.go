@@ -1,3 +1,5 @@
+// TODO - run append (pro) / update functions in sheets.go on PaymentIntent creation & webhook (respectively)
+
 package main
 
 import (
@@ -11,7 +13,7 @@ import (
 )
 
 func main() {
-	gmain()
+	// gmain()
 
 	godotenv.Load()
 

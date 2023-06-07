@@ -3,7 +3,6 @@ package main
 import (
 	"context"
 	"fmt"
-	"log"
 	"os"
 
 	"golang.org/x/oauth2/google"
@@ -12,61 +11,26 @@ import (
 )
 
 // Struct to contain all of the various field that are needed to append into the spreadsheet
-type Consumer struct {
-	GUID      string
-	FirstName string
-	LastName  string
-	Email     string
+// Sheet 1
+type Consumer struct { // Corresponding column:
+	GUID      string // 	A
+	FirstName string // 	B
+	LastName  string // 	C
+	Email     string // 	D
 }
 
 // Struct to contain all of the various field for the product
-type Product struct {
-	GUID          string
-	ProductName   string
-	ProductColour string
-	ProductSize   string
-	PaymentStatus string
-}
-
-func gmain() {
-	// Setting the spreadsheetId
-	spreadsheetId := "1EbJIzUrwXX0NMKPwg941sDyI1LSmZuNO_w7B3xO_Y6I"
-
-	consumer := Consumer{
-		GUID:      "CONSUMER_GUID",
-		FirstName: "John",
-		LastName:  "Doe",
-		Email:     "john.doe@example.com",
-	}
-
-	product := Product{
-		GUID:          "Product A",
-		ProductName:   "Medium",
-		ProductColour: "Blue",
-		ProductSize:   "M",
-		PaymentStatus: "success",
-	}
-
-	err := appendUserInfo(spreadsheetId, consumer)
-
-	if err != nil {
-		log.Fatalf("Failed to append user information: %v", err)
-	}
-
-	err_2 := appendProductInfo(spreadsheetId, product)
-
-	if err_2 != nil {
-		log.Fatalf("Failed to append product information: %v", err_2)
-	}
-
-	err_3 := orderStatusUpdate(spreadsheetId, consumer.GUID)
-
-	if err_3 != nil {
-		log.Fatalf("Failed to update the status of the product or user information: %v", err_3)
-	}
+// Sheet 2
+type Product struct { // Corresponding column:
+	GUID          string //	A
+	ProductName   string //	B
+	ProductColour string //	C
+	ProductSize   string //	D
+	PaymentStatus string //	E
 }
 
 // Function that will append the user data into the spreadsheet
+// TODO - don't append user info if GUID already exists? (Or perhaps update fields)
 func appendUserInfo(spreadsheetID string, consumer Consumer) error {
 	ctx := context.Background()
 
@@ -74,6 +38,9 @@ func appendUserInfo(spreadsheetID string, consumer Consumer) error {
 	if err != nil {
 		return err
 	}
+
+	// Specifying the writing range
+	cellRange := "Sheet1!A2:D"
 
 	// Prepare the values to be appended
 	values := []interface{}{
@@ -91,9 +58,7 @@ func appendUserInfo(spreadsheetID string, consumer Consumer) error {
 	// Indicating that values entered should be treated as if users themselves had entered them
 	valueInputOption := "USER_ENTERED"
 
-	// Specifying the writing range
-	writeRange := "Sheet1!A2:D"
-	appendResp, err := srv.Spreadsheets.Values.Append(spreadsheetID, writeRange, valueRange).ValueInputOption(valueInputOption).Do()
+	appendResp, err := srv.Spreadsheets.Values.Append(spreadsheetID, cellRange, valueRange).ValueInputOption(valueInputOption).Context(ctx).Do()
 
 	if err != nil {
 		return fmt.Errorf("unable to append data to sheet: %v", err)
@@ -113,6 +78,9 @@ func appendProductInfo(spreadsheetId string, product Product) error {
 		return err
 	}
 
+	// Specifying the writing range
+	cellRange := "Sheet2!A1:D"
+
 	// Prepare the values to be appended
 	values := []interface{}{
 		product.GUID,
@@ -130,9 +98,7 @@ func appendProductInfo(spreadsheetId string, product Product) error {
 	// Indicating that values entered should be treated as if users themselves had entered them
 	valueInputOption := "USER_ENTERED"
 
-	// Specifying the writing range
-	writeRange := "Sheet2!A2:D"
-	appendResp, err := srv.Spreadsheets.Values.Append("1EbJIzUrwXX0NMKPwg941sDyI1LSmZuNO_w7B3xO_Y6I", writeRange, valueRange).ValueInputOption(valueInputOption).Do()
+	appendResp, err := srv.Spreadsheets.Values.Append(spreadsheetId, cellRange, valueRange).ValueInputOption(valueInputOption).Context(ctx).Do()
 
 	if err != nil {
 		return fmt.Errorf("unable to append data to sheet: %v", err)
@@ -143,11 +109,11 @@ func appendProductInfo(spreadsheetId string, product Product) error {
 	return nil
 }
 
-// THIS FUNCTION IS INCOMPLETE WE STILL NEED TO FIGURE OUT HOW TO FILTER THE COLUMN BY THE GUID
-// WE THINK IT IS THE FILTER .BATCHUPDATE FUNCTION IN THE SHEETS API BUT WE ARE UNSURE
+// Optional todo - rewrite to filter data by the GUID column (find row w/ corresponding GUID,
+// then update corresponding status column)
 
 // Function that will update the row status to either fail or success
-func orderStatusUpdate(spreadsheetId string, guid string) error {
+func orderStatusUpdate(spreadsheetId string, GUID string, PaymentStatus string) error {
 	ctx := context.Background()
 
 	srv, err := getSheetsClient(ctx)
@@ -156,10 +122,10 @@ func orderStatusUpdate(spreadsheetId string, guid string) error {
 	}
 
 	// Define the range to search in, including the GUID and status columns
-	searchRange := "Sheet2!E2:E"
+	searchRange := "Sheet2"
 
 	// Create the request to search for the GUID value
-	resp, err := srv.Spreadsheets.Values.Get("1EbJIzUrwXX0NMKPwg941sDyI1LSmZuNO_w7B3xO_Y6I", searchRange).Do()
+	resp, err := srv.Spreadsheets.Values.Get(spreadsheetId, searchRange).Context(ctx).Do()
 
 	if err != nil {
 		return fmt.Errorf("unable to retrieve data from sheet: %v", err)
@@ -170,10 +136,39 @@ func orderStatusUpdate(spreadsheetId string, guid string) error {
 	}
 
 	// Iterate over the rows to find the matching GUID and check the status
-	for _, col := range resp.Values {
-		// Print columns E, which correspond to index 0 of the specified searchRange 'Sheet2!E2:E'.
-		fmt.Printf("%s\n", col[0])
+	for i, row := range resp.Values {
+		if row[0] == GUID {
+			// Write PaymentStatus to column E, row (i + 1) (needs to be 1-indexed)
+
+			// Specifying the writing range
+			cellRange := fmt.Sprint("Sheet2!E", i+1, ":E") // Range in the format "Sheet2!E1:E"
+
+			// Prepare the value to update column E (PaymentStatus) to
+			values := []interface{}{
+				PaymentStatus,
+			}
+
+			// Specifying the ranges of values that will be appended to the Google Sheet
+			// AKA fields of the request body
+			valueRange := &sheets.ValueRange{
+				Values: [][]interface{}{values},
+			}
+
+			// Indicating that values entered should be treated as if users themselves had entered them
+			valueInputOption := "USER_ENTERED"
+
+			updateResp, err := srv.Spreadsheets.Values.Update(spreadsheetId, cellRange, valueRange).ValueInputOption(valueInputOption).Context(ctx).Do()
+
+			if err != nil {
+				return fmt.Errorf("unable to update PaymentStatus: %v", err)
+			}
+
+			fmt.Printf("Updated range: %s\n", updateResp.UpdatedRange)
+
+			break
+		}
 	}
+
 	return nil
 }
 

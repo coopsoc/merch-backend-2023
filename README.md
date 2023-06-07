@@ -10,11 +10,7 @@ The website will send various API requests to this backend (hosted locally on a 
 
 ## Usage
 
-```sh
-go add .
-```
-
-Then, either:
+Either:
 
 ```sh
 go run .
@@ -26,6 +22,8 @@ or:
 go build
 ./coopsoc.com.au
 ```
+
+Might also need to run `go mod tidy`.
 
 ## Routes
 
