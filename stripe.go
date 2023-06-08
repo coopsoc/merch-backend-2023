@@ -53,8 +53,8 @@ func stripeGetProducts() []item {
 }
 
 type cart_item struct {
-	id   string
-	size string
+	id   string `json:"id" binding:"required"`
+	size string `json:"size" binding:"required"`
 }
 
 type intent struct {
@@ -71,14 +71,15 @@ func calculateOrderAmount(cart_items []cart_item) int64 {
 	var total_items int = 0
 	var maybe_discount bool = false
 
-	for i := 0; i < len(cart_items); i++ {
+	for _, cart_item := range cart_items {
 		for _, s := range HOODIE_IDS {
-			if cart_items[i].id == s {
+			if cart_item.id == s {
 				maybe_discount = true
 				break
 			}
 		}
-		total_price += findItemPrice(all_items, cart_items[i].id)
+		price := findItemPrice(all_items, cart_item.id)
+		total_price += price
 	}
 
 	if maybe_discount && total_items >= 3 {
@@ -89,7 +90,7 @@ func calculateOrderAmount(cart_items []cart_item) int64 {
 		total_price -= 500
 	}
 
-	fmt.Printf("The total price was: %v", total_price)
+	fmt.Printf("The total price was: %v\n", total_price)
 
 	// Price must be at least $0.50 AUD, as per Stripe's minimum
 	return max(50, total_price)

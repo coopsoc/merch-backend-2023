@@ -95,17 +95,20 @@ func getProducts(c *gin.Context) {
 
 func createPaymentIntent(c *gin.Context) {
 	type cart struct {
+		Items []cart_item `json:"item"`
+	}
+
+	type request struct {
 		FirstName string
 		LastName  string
 		Email     string
-		Items     []cart_item `json:"items"`
+		Cart      cart `json:"cart" binding:"required"`
 	}
 
-	var body cart
+	var body request
 	c.BindJSON(&body)
-	// TODO - make sure cart items have quantities and IDs
 
-	i := stripeCreatePaymentIntent(body.Items)
+	i := stripeCreatePaymentIntent(body.Cart.Items)
 
 	var consumer Consumer
 
@@ -115,7 +118,7 @@ func createPaymentIntent(c *gin.Context) {
 
 	appendUserInfo(SPREADSHEET_ID, consumer)
 
-	for _, v := range body.Items {
+	for _, v := range body.Cart.Items {
 		var product Product
 		product.ClientSecret = i.CLIENT_SECRET
 		product.FirstName = body.FirstName
