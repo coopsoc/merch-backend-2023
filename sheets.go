@@ -13,7 +13,6 @@ import (
 // Struct to contain all of the various field that are needed to append into the spreadsheet
 // Sheet 1
 type Consumer struct { // Corresponding column:
-	GUID      string // 	A
 	FirstName string // 	B
 	LastName  string // 	C
 	Email     string // 	D
@@ -22,12 +21,15 @@ type Consumer struct { // Corresponding column:
 // Struct to contain all of the various field for the product
 // Sheet 2
 type Product struct { // Corresponding column:
-	GUID          string //	A
-	ProductName   string //	B
-	ProductColour string //	C
-	ProductSize   string //	D
-	PaymentStatus string //	E
+	ClientSecret  string // A
+	FirstName     string // B
+	LastName      string // C
+	ProductName   string //	D
+	ProductSize   string //	E
+	PaymentStatus string //	F
 }
+
+const SPREADSHEET_ID = "1BxiMVs0XRA5nFMdKvBdBZjgmUUqptlbs74OgvE2upms"
 
 // Function that will append the user data into the spreadsheet
 // TODO - don't append user info if GUID already exists? (Or perhaps update fields)
@@ -35,6 +37,7 @@ func appendUserInfo(spreadsheetID string, consumer Consumer) error {
 	ctx := context.Background()
 
 	srv, err := getSheetsClient(ctx)
+
 	if err != nil {
 		return err
 	}
@@ -44,7 +47,6 @@ func appendUserInfo(spreadsheetID string, consumer Consumer) error {
 
 	// Prepare the values to be appended
 	values := []interface{}{
-		consumer.GUID,
 		consumer.FirstName,
 		consumer.LastName,
 		consumer.Email,
@@ -83,9 +85,10 @@ func appendProductInfo(spreadsheetId string, product Product) error {
 
 	// Prepare the values to be appended
 	values := []interface{}{
-		product.GUID,
+		product.ClientSecret,
+		product.FirstName,
+		product.LastName,
 		product.ProductName,
-		product.ProductColour,
 		product.ProductSize,
 		product.PaymentStatus,
 	}
@@ -113,7 +116,7 @@ func appendProductInfo(spreadsheetId string, product Product) error {
 // then update corresponding status column)
 
 // Function that will update the row status to either fail or success
-func orderStatusUpdate(spreadsheetId string, GUID string, PaymentStatus string) error {
+func updateOrderStatus(spreadsheetId string, ClientSecret string, PaymentStatus string) error {
 	ctx := context.Background()
 
 	srv, err := getSheetsClient(ctx)
@@ -137,11 +140,11 @@ func orderStatusUpdate(spreadsheetId string, GUID string, PaymentStatus string) 
 
 	// Iterate over the rows to find the matching GUID and check the status
 	for i, row := range resp.Values {
-		if row[0] == GUID {
+		if row[0] == ClientSecret {
 			// Write PaymentStatus to column E, row (i + 1) (needs to be 1-indexed)
 
 			// Specifying the writing range
-			cellRange := fmt.Sprint("Sheet2!E", i+1, ":E") // Range in the format "Sheet2!E1:E"
+			cellRange := fmt.Sprintf("Sheet2!F%v:F", i+1) // Range in the format "Sheet2!E1:E"
 
 			// Prepare the value to update column E (PaymentStatus) to
 			values := []interface{}{

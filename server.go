@@ -3,6 +3,7 @@
 package main
 
 import (
+	"encoding/json"
 	"log"
 	"net/http"
 	"os"
@@ -35,6 +36,7 @@ func main() {
 
 	router.GET("/products", getProducts)
 	router.POST("/payment", createPaymentIntent)
+	router.Any("/webhook", updatePaymentStatus)
 
 	port := os.Getenv("PORT")
 	router.Run(":" + port)
@@ -57,6 +59,29 @@ func CORSMiddleware() gin.HandlerFunc {
 	}
 }
 
+func updatePaymentStatus(c *gin.Context) {
+	var event stripe.Event
+	c.BindJSON(&event)
+
+	switch event.Type {
+	case "payment_intent.succeeded":
+		var intent stripe.PaymentIntent
+		err := json.Unmarshal(event.Data.Raw, &intent)
+
+		if err != nil {
+			c.Status(http.StatusBadRequest)
+			return
+		}
+
+		updateOrderStatus(SPREADSHEET_ID, intent.ClientSecret, "Approved")
+		break
+	case "payment_intent.failed":
+		break
+	}
+
+	c.Status(http.StatusOK)
+}
+
 func getProducts(c *gin.Context) {
 	items := stripeGetProducts()
 
@@ -70,7 +95,10 @@ func getProducts(c *gin.Context) {
 
 func createPaymentIntent(c *gin.Context) {
 	type cart struct {
-		Items []cart_item `json:"items"`
+		FirstName string
+		LastName  string
+		Email     string
+		Items     []cart_item `json:"items"`
 	}
 
 	var body cart
@@ -78,6 +106,28 @@ func createPaymentIntent(c *gin.Context) {
 	// TODO - make sure cart items have quantities and IDs
 
 	i := stripeCreatePaymentIntent(body.Items)
+
+	var consumer Consumer
+
+	consumer.FirstName = body.FirstName
+	consumer.LastName = body.LastName
+	consumer.Email = body.Email
+
+	appendUserInfo(SPREADSHEET_ID, consumer)
+
+	for _, v := range body.Items {
+		var product Product
+		product.ClientSecret = i.CLIENT_SECRET
+		product.FirstName = body.FirstName
+		product.LastName = body.LastName
+		product.ProductName = filter(stripeGetProducts(), func(i item) bool {
+			return i.ID == v.id
+		})
+		product.ProductSize = v.size
+		product.PaymentStatus = "Unapproved"
+
+		appendProductInfo(SPREADSHEET_ID, product)
+	}
 
 	c.Writer.Header().Set("Access-Control-Allow-Origin", "*")
 

@@ -8,7 +8,7 @@ import (
 )
 
 // ID of the product in a bundle discount
-const hoodie_id = "prod_O1XqaoJYM2O4uR"
+var HOODIE_IDS = [...]string{"prod_o1xqaojym2o4ur"}
 
 type item struct {
 	ID          string   `json:"id"`
@@ -51,8 +51,8 @@ func stripeGetProducts() []item {
 }
 
 type cart_item struct {
-	id       string
-	quantity int
+	id   string
+	size string
 }
 
 type intent struct {
@@ -70,11 +70,13 @@ func calculateOrderAmount(cart_items []cart_item) int64 {
 	var maybe_discount bool = false
 
 	for i := 0; i < len(cart_items); i++ {
-		if cart_items[i].id == hoodie_id {
-			maybe_discount = true
+		for _, s := range HOODIE_IDS {
+			if cart_items[i].id == s {
+				maybe_discount = true
+				break
+			}
 		}
-		total_items += cart_items[i].quantity
-		total_price += findItemPrice(all_items, cart_items[i].id) * int64(cart_items[i].quantity)
+		total_price += findItemPrice(all_items, cart_items[i].id)
 	}
 
 	if maybe_discount && total_items >= 3 {
