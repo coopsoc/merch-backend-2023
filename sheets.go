@@ -81,7 +81,7 @@ func appendProductInfo(spreadsheetId string, product Product) error {
 	}
 
 	// Specifying the writing range
-	cellRange := "Sheet2!A1:F"
+	cellRange := "Sheet2!A1:F1"
 
 	// Prepare the values to be appended
 	values := []interface{}{
@@ -144,7 +144,7 @@ func updateOrderStatus(spreadsheetId string, ClientSecret string, PaymentStatus 
 			// Write PaymentStatus to column E, row (i + 1) (needs to be 1-indexed)
 
 			// Specifying the writing range
-			cellRange := fmt.Sprintf("Sheet2!F%v:F", i+1) // Range in the format "Sheet2!E1:E"
+			cellRange := fmt.Sprintf("Sheet2!F%v", i+1) // Range in the format "Sheet2!E1:E"
 
 			// Prepare the value to update column E (PaymentStatus) to
 			values := []interface{}{

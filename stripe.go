@@ -10,7 +10,7 @@ import (
 )
 
 // ID of the product in a bundle discount
-var HOODIE_IDS = [...]string{"prod_o1xqaojym2o4ur"}
+var HOODIE_IDS = [...]string{"prod_O2mPalbP4HvHJc", "prod_O2mMZ7N70DGrap", "prod_O2mMUWKTwsVC1U"}
 
 type item struct {
 	ID          string   `json:"id"`
