@@ -10,6 +10,8 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/joho/godotenv"
 	"github.com/stripe/stripe-go/v74"
+
+	"github.com/google/uuid"
 )
 
 func main() {
@@ -68,16 +70,47 @@ func getProducts(c *gin.Context) {
 	}
 }
 
+type checkout_info struct {
+	FIRST_NAME string      `json:"first_name"`
+	LAST_NAME  string      `json:"last_name"`
+	EMAIL      string      `json:"email"`
+	CART_ITEMS []cart_item `json:"cart_items"`
+}
+
 func createPaymentIntent(c *gin.Context) {
-	type cart struct {
-		Items []cart_item `json:"items"`
+	var body checkout_info
+	c.BindJSON(&body)
+	// TODO - make sure data is passed in correctly
+
+	// Stripe
+	i := stripeCreatePaymentIntent(body.CART_ITEMS)
+
+	// Google sheets API
+	spreadsheetID := os.Getenv("SPREADSHEET_ID")
+
+	guid := uuid.New().String()
+
+	consumer := Consumer{
+		GUID:      guid,
+		FirstName: body.FIRST_NAME,
+		LastName:  body.LAST_NAME,
+		Email:     body.EMAIL,
 	}
 
-	var body cart
-	c.BindJSON(&body)
-	// TODO - make sure cart items have quantities and IDs
+	appendUserInfo(spreadsheetID, consumer)
 
-	i := stripeCreatePaymentIntent(body.Items)
+	for _, cart_item := range body.CART_ITEMS {
+		// TODO - create lookup function to return product name for given cart_item.id?
+		product := Product{
+			GUID:          guid,
+			ProductName:   cart_item.id,
+			ProductColour: cart_item.color,
+			ProductSize:   cart_item.size,
+			PaymentStatus: "", // Will get updated by the webhook later
+		}
+
+		appendProductInfo(spreadsheetID, product)
+	}
 
 	c.Writer.Header().Set("Access-Control-Allow-Origin", "*")
 

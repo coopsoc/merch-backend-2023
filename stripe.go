@@ -50,9 +50,11 @@ func stripeGetProducts() []item {
 	return items
 }
 
+// If quantity > 1, will just have multiple identical cart_items
 type cart_item struct {
-	id       string
-	quantity int
+	id    string
+	color string
+	size  string
 }
 
 type intent struct {
@@ -73,8 +75,8 @@ func calculateOrderAmount(cart_items []cart_item) int64 {
 		if cart_items[i].id == hoodie_id {
 			maybe_discount = true
 		}
-		total_items += cart_items[i].quantity
-		total_price += findItemPrice(all_items, cart_items[i].id) * int64(cart_items[i].quantity)
+		total_items += 1
+		total_price += findItemPrice(all_items, cart_items[i].id)
 	}
 
 	if maybe_discount && total_items >= 3 {

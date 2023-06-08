@@ -70,7 +70,7 @@ func appendUserInfo(spreadsheetID string, consumer Consumer) error {
 }
 
 // Function that will append the product data into the spreadsheet
-func appendProductInfo(spreadsheetId string, product Product) error {
+func appendProductInfo(spreadsheetID string, product Product) error {
 	ctx := context.Background()
 
 	srv, err := getSheetsClient(ctx)
@@ -98,7 +98,7 @@ func appendProductInfo(spreadsheetId string, product Product) error {
 	// Indicating that values entered should be treated as if users themselves had entered them
 	valueInputOption := "USER_ENTERED"
 
-	appendResp, err := srv.Spreadsheets.Values.Append(spreadsheetId, cellRange, valueRange).ValueInputOption(valueInputOption).Context(ctx).Do()
+	appendResp, err := srv.Spreadsheets.Values.Append(spreadsheetID, cellRange, valueRange).ValueInputOption(valueInputOption).Context(ctx).Do()
 
 	if err != nil {
 		return fmt.Errorf("unable to append data to sheet: %v", err)
@@ -113,7 +113,7 @@ func appendProductInfo(spreadsheetId string, product Product) error {
 // then update corresponding status column)
 
 // Function that will update the row status to either fail or success
-func orderStatusUpdate(spreadsheetId string, GUID string, PaymentStatus string) error {
+func orderStatusUpdate(spreadsheetID string, GUID string, PaymentStatus string) error {
 	ctx := context.Background()
 
 	srv, err := getSheetsClient(ctx)
@@ -125,7 +125,7 @@ func orderStatusUpdate(spreadsheetId string, GUID string, PaymentStatus string) 
 	searchRange := "Sheet2"
 
 	// Create the request to search for the GUID value
-	resp, err := srv.Spreadsheets.Values.Get(spreadsheetId, searchRange).Context(ctx).Do()
+	resp, err := srv.Spreadsheets.Values.Get(spreadsheetID, searchRange).Context(ctx).Do()
 
 	if err != nil {
 		return fmt.Errorf("unable to retrieve data from sheet: %v", err)
@@ -157,7 +157,7 @@ func orderStatusUpdate(spreadsheetId string, GUID string, PaymentStatus string) 
 			// Indicating that values entered should be treated as if users themselves had entered them
 			valueInputOption := "USER_ENTERED"
 
-			updateResp, err := srv.Spreadsheets.Values.Update(spreadsheetId, cellRange, valueRange).ValueInputOption(valueInputOption).Context(ctx).Do()
+			updateResp, err := srv.Spreadsheets.Values.Update(spreadsheetID, cellRange, valueRange).ValueInputOption(valueInputOption).Context(ctx).Do()
 
 			if err != nil {
 				return fmt.Errorf("unable to update PaymentStatus: %v", err)
