@@ -100,13 +100,14 @@ func findItemPrice(items []item, id string) int64 {
 	return 0
 }
 
-func stripeCreatePaymentIntent(items []cart_item) intent {
+func stripeCreatePaymentIntent(items []cart_item, email string) intent {
 	params := &stripe.PaymentIntentParams{
 		Amount:   stripe.Int64(calculateOrderAmount(items)),
 		Currency: stripe.String(string(stripe.CurrencyAUD)),
 		AutomaticPaymentMethods: &stripe.PaymentIntentAutomaticPaymentMethodsParams{
 			Enabled: stripe.Bool(true),
 		},
+		ReceiptEmail: stripe.String(email),
 	}
 
 	pi, _ := paymentintent.New(params)
