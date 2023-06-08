@@ -29,7 +29,7 @@ type Product struct { // Corresponding column:
 	PaymentStatus string //	F
 }
 
-const SPREADSHEET_ID = "1BxiMVs0XRA5nFMdKvBdBZjgmUUqptlbs74OgvE2upms"
+const SPREADSHEET_ID = "1MqUQwQJeiOdAi5QUxhS6T3kQAcpBlDzU5-X1KJEPUFY"
 
 // Function that will append the user data into the spreadsheet
 // TODO - don't append user info if GUID already exists? (Or perhaps update fields)

@@ -1,6 +1,8 @@
 package main
 
 import (
+	"fmt"
+
 	"github.com/stripe/stripe-go/v74"
 	"github.com/stripe/stripe-go/v74/paymentintent"
 	"github.com/stripe/stripe-go/v74/price"
@@ -86,6 +88,8 @@ func calculateOrderAmount(cart_items []cart_item) int64 {
 		// $5 off if you buy a hoodie and 1 other item
 		total_price -= 500
 	}
+
+	fmt.Printf("The total price was: %v", total_price)
 
 	// Price must be at least $0.50 AUD, as per Stripe's minimum
 	return max(50, total_price)
