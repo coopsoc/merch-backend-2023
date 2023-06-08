@@ -43,7 +43,7 @@ func appendUserInfo(spreadsheetID string, consumer Consumer) error {
 	}
 
 	// Specifying the writing range
-	cellRange := "Sheet1!A2:D"
+	cellRange := "Sheet1!A1:C"
 
 	// Prepare the values to be appended
 	values := []interface{}{
@@ -81,7 +81,7 @@ func appendProductInfo(spreadsheetId string, product Product) error {
 	}
 
 	// Specifying the writing range
-	cellRange := "Sheet2!A1:D"
+	cellRange := "Sheet2!A1:F"
 
 	// Prepare the values to be appended
 	values := []interface{}{
