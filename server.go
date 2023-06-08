@@ -83,7 +83,7 @@ func createPaymentIntent(c *gin.Context) {
 	// TODO - make sure data is passed in correctly
 
 	// Stripe
-	i := stripeCreatePaymentIntent(body.CART_ITEMS)
+	i := stripeCreatePaymentIntent(body.CART_ITEMS, body.EMAIL)
 
 	// Google sheets API
 	spreadsheetID := os.Getenv("SPREADSHEET_ID")
