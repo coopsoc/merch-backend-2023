@@ -29,7 +29,7 @@ type Product struct { // Corresponding column:
 	PaymentStatus string //	F
 }
 
-const SPREADSHEET_ID = "1MqUQwQJeiOdAi5QUxhS6T3kQAcpBlDzU5-X1KJEPUFY"
+var SPREADSHEET_ID = os.Getenv("SPREADSHEET_ID")
 
 // Function that will append the user data into the spreadsheet
 // TODO - don't append user info if GUID already exists? (Or perhaps update fields)

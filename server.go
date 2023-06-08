@@ -14,7 +14,6 @@ import (
 )
 
 func main() {
-	// gmain()
 
 	godotenv.Load()
 
@@ -74,9 +73,8 @@ func updatePaymentStatus(c *gin.Context) {
 		}
 
 		updateOrderStatus(SPREADSHEET_ID, intent.ClientSecret, "Approved")
-		break
 	case "payment_intent.failed":
-		break
+		log.Println("Payment failed")
 	}
 
 	c.Status(http.StatusOK)
@@ -93,40 +91,45 @@ func getProducts(c *gin.Context) {
 	}
 }
 
+type cart_item struct {
+	ID   string `json:"id" binding:"required"`
+	SIZE string `json:"size" binding:"required"`
+}
+
 func createPaymentIntent(c *gin.Context) {
 	type cart struct {
-		Items []cart_item `json:"item"`
+		ITEMS []cart_item `json:"items"`
 	}
 
 	type request struct {
-		FirstName string
-		LastName  string
-		Email     string
-		Cart      cart `json:"cart" binding:"required"`
+		FIRST_NAME string `json:"firstName"`
+		LAST_NAME  string `json:"lastName"`
+		EMAIL      string `json:"email"`
+		CART       cart   `json:"cart" binding:"required"`
 	}
 
 	var body request
 	c.BindJSON(&body)
 
-	i := stripeCreatePaymentIntent(body.Cart.Items)
+	i := stripeCreatePaymentIntent(body.CART.ITEMS)
 
 	var consumer Consumer
 
-	consumer.FirstName = body.FirstName
-	consumer.LastName = body.LastName
-	consumer.Email = body.Email
+	consumer.FirstName = body.FIRST_NAME
+	consumer.LastName = body.LAST_NAME
+	consumer.Email = body.EMAIL
 
 	appendUserInfo(SPREADSHEET_ID, consumer)
 
-	for _, v := range body.Cart.Items {
+	for _, v := range body.CART.ITEMS {
 		var product Product
 		product.ClientSecret = i.CLIENT_SECRET
-		product.FirstName = body.FirstName
-		product.LastName = body.LastName
+		product.FirstName = body.FIRST_NAME
+		product.LastName = body.LAST_NAME
 		product.ProductName = filter(stripeGetProducts(), func(i item) bool {
-			return i.ID == v.id
+			return i.ID == v.ID
 		})
-		product.ProductSize = v.size
+		product.ProductSize = v.SIZE
 		product.PaymentStatus = "Unapproved"
 
 		appendProductInfo(SPREADSHEET_ID, product)

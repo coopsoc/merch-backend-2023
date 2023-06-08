@@ -52,11 +52,6 @@ func stripeGetProducts() []item {
 	return items
 }
 
-type cart_item struct {
-	id   string `json:"id" binding:"required"`
-	size string `json:"size" binding:"required"`
-}
-
 type intent struct {
 	CLIENT_SECRET string `json:"clientSecret"`
 }
@@ -73,12 +68,12 @@ func calculateOrderAmount(cart_items []cart_item) int64 {
 
 	for _, cart_item := range cart_items {
 		for _, s := range HOODIE_IDS {
-			if cart_item.id == s {
+			if cart_item.ID == s {
 				maybe_discount = true
 				break
 			}
 		}
-		price := findItemPrice(all_items, cart_item.id)
+		price := findItemPrice(all_items, cart_item.ID)
 		total_price += price
 	}
 
