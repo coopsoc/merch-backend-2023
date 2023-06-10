@@ -68,6 +68,7 @@ func calculateOrderAmount(cart_items []cart_item) int64 {
 
 	for _, cart_item := range cart_items {
 		for _, s := range HOODIE_IDS {
+			fmt.Printf("This hoodie ID was checked: %v", s)
 			if cart_item.ID == s {
 				maybe_discount = true
 				break
@@ -75,17 +76,22 @@ func calculateOrderAmount(cart_items []cart_item) int64 {
 		}
 		price := findItemPrice(all_items, cart_item.ID)
 		total_price += price
+		total_items += 1
 	}
 
-	if maybe_discount && total_items >= 3 {
-		// $10 off if you buy a hoodie and 2 other items
+	if !maybe_discount {
+		return total_price
+	}
+
+	if total_items >= 3 {
 		total_price -= 1000
-	} else if maybe_discount && total_items >= 2 {
-		// $5 off if you buy a hoodie and 1 other item
+	} else if total_items >= 2 {
 		total_price -= 500
 	}
 
+	fmt.Printf("Total items was: %v", total_items)
 	fmt.Printf("The total price was: %v\n", total_price)
+	fmt.Printf("There was a discount potentially applied: %v", maybe_discount)
 
 	// Price must be at least $0.50 AUD, as per Stripe's minimum
 	return max(50, total_price)

@@ -4,6 +4,7 @@ package main
 
 import (
 	"encoding/json"
+	"fmt"
 	"log"
 	"net/http"
 	"os"
@@ -39,6 +40,8 @@ func main() {
 
 	port := os.Getenv("PORT")
 	router.Run(":" + port)
+
+	fmt.Printf("Server is running...\n")
 }
 
 func CORSMiddleware() gin.HandlerFunc {
@@ -132,6 +135,7 @@ func createPaymentIntent(c *gin.Context) {
 		product.ProductSize = v.SIZE
 		product.PaymentStatus = "Unapproved"
 
+		// this should not happen here
 		appendProductInfo(SPREADSHEET_ID, product)
 	}
 
