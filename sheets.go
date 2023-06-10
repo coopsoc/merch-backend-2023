@@ -167,8 +167,6 @@ func updateOrderStatus(spreadsheetId string, ClientSecret string, PaymentStatus 
 			}
 
 			fmt.Printf("Updated range: %s\n", updateResp.UpdatedRange)
-
-			break
 		}
 	}
 
