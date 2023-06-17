@@ -10,7 +10,17 @@ import (
 )
 
 // ID of the product in a bundle discount
-var HOODIE_IDS = [...]string{"prod_O2mPalbP4HvHJc", "prod_O2mMZ7N70DGrap", "prod_O2mMUWKTwsVC1U"}
+var HOODIE_IDS = [...]string{
+	"prod_O2mPalbP4HvHJc", // Hoodie - Cream
+	"prod_O2mMZ7N70DGrap", // Hoodie - Green
+	"prod_O2mMUWKTwsVC1U", // Hoodie - Black
+	"prod_O34lEdsgMSE8TY", // Hoodie Cream - Stealth
+	"prod_O34mEl0jE7T9UJ", // Hoodie Green - Stealth
+	"prod_O34lSQer1T3zUX", // Hoodie Black - Stealth
+}
+
+const HOODIE_AND_ONE_ITEM_DISCOUNT = 500
+const HOODIE_AND_TWO_ITEMS_DISCOUNT = 1000
 
 type item struct {
 	ID          string   `json:"id"`
@@ -64,34 +74,28 @@ func calculateOrderAmount(cart_items []cart_item) int64 {
 
 	var total_price int64 = 0
 	var total_items int = 0
-	var maybe_discount bool = false
+	var hoodie_in_cart bool = false
 
 	for _, cart_item := range cart_items {
-		for _, s := range HOODIE_IDS {
-			fmt.Printf("This hoodie ID was checked: %v", s)
-			if cart_item.ID == s {
-				maybe_discount = true
-				break
-			}
-		}
-		price := findItemPrice(all_items, cart_item.ID)
-		total_price += price
-		total_items += 1
+		hoodie_in_cart = hoodie_in_cart || itemIsHoodie(cart_item.ID)
+		total_price += findItemPrice(all_items, cart_item.ID)
+		total_items++
 	}
 
-	if !maybe_discount {
+	if !hoodie_in_cart {
+		fmt.Print("\tNo hoodies in cart. Discount not applied.\n")
 		return total_price
 	}
 
 	if total_items >= 3 {
-		total_price -= 1000
+		total_price -= HOODIE_AND_TWO_ITEMS_DISCOUNT
 	} else if total_items >= 2 {
-		total_price -= 500
+		total_price -= HOODIE_AND_ONE_ITEM_DISCOUNT
 	}
 
-	fmt.Printf("Total items was: %v", total_items)
-	fmt.Printf("The total price was: %v\n", total_price)
-	fmt.Printf("There was a discount potentially applied: %v", maybe_discount)
+	fmt.Printf("\tTotal items was: %v\n", total_items)
+	fmt.Printf("\tThe total price was: %v\n", total_price)
+	fmt.Printf("\tDiscount applied: %v\n", hoodie_in_cart)
 
 	// Price must be at least $0.50 AUD, as per Stripe's minimum
 	return max(50, total_price)
@@ -104,6 +108,18 @@ func findItemPrice(items []item, id string) int64 {
 		}
 	}
 	return 0
+}
+
+func itemIsHoodie(item_id string) bool {
+	for _, hoodie_id := range HOODIE_IDS {
+		fmt.Printf("\tThis hoodie ID was checked: %v\n", hoodie_id)
+		if item_id == hoodie_id {
+			fmt.Printf("\tThis hoodie ID was matched: %v\n", hoodie_id)
+			return true
+		}
+	}
+	fmt.Printf("\tThis item is not a hoodie: %v\n", item_id)
+	return false
 }
 
 func stripeCreatePaymentIntent(items []cart_item, email string) intent {

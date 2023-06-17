@@ -114,6 +114,7 @@ func createPaymentIntent(c *gin.Context) {
 	var body request
 	c.BindJSON(&body)
 
+	fmt.Printf("Creating payment intent... Body:\n\t%v\n", body)
 	i := stripeCreatePaymentIntent(body.CART.ITEMS, body.EMAIL)
 
 	var consumer Consumer
