@@ -82,23 +82,27 @@ func calculateOrderAmount(cart_items []cart_item) int64 {
 		total_items++
 	}
 
+	// Discount to apply (in cents)
+	var discount int64 = 0
+
 	if !hoodie_in_cart {
 		fmt.Print("\tNo hoodies in cart. Discount not applied.\n")
-		return total_price
-	}
-
-	if total_items >= 3 {
-		total_price -= HOODIE_AND_TWO_ITEMS_DISCOUNT
+	} else if total_items >= 3 {
+		fmt.Printf("\tHoodie and >= two other items in cart. %vc discount applied.\n", HOODIE_AND_TWO_ITEMS_DISCOUNT)
+		discount += HOODIE_AND_TWO_ITEMS_DISCOUNT
 	} else if total_items >= 2 {
-		total_price -= HOODIE_AND_ONE_ITEM_DISCOUNT
+		fmt.Printf("\tHoodie and one other item in cart. %vc discount applied.\n", HOODIE_AND_ONE_ITEM_DISCOUNT)
+		discount += HOODIE_AND_ONE_ITEM_DISCOUNT
 	}
 
-	fmt.Printf("\tTotal items was: %v\n", total_items)
-	fmt.Printf("\tThe total price was: %v\n", total_price)
-	fmt.Printf("\tDiscount applied: %v\n", hoodie_in_cart)
+	total_price = max(50, total_price-discount)
+
+	fmt.Printf("\tTotal number of items: %v\n", total_items)
+	fmt.Printf("\tDiscount applied: %vc\n", discount)
+	fmt.Printf("\tThe total price (after discount): %vc\n", total_price)
 
 	// Price must be at least $0.50 AUD, as per Stripe's minimum
-	return max(50, total_price)
+	return total_price
 }
 
 func findItemPrice(items []item, id string) int64 {
